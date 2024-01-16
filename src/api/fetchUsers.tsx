@@ -1,5 +1,12 @@
 import { FetchUsersProps, User } from "../utils";
 
+/**
+ * Fetches users from the API.
+ *
+ * @param {FetchUsersProps} [options] - Optional parameters for fetching users.
+ * @param {number} [options.limit=10] - The maximum number of users to fetch.
+ * @return {Promise<User[]>} - A promise that resolves to an array of user objects.
+ */
 const fetchUsers = async ({ limit = 10 }: FetchUsersProps = {}): Promise<
   User[]
 > => {

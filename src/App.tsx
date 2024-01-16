@@ -4,13 +4,13 @@ import fetchUsers from "./api/fetchUsers";
 import useDropdown from "./hooks/useDropdown";
 
 function App() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [users, setUsers] = useState<User[]>([]);
   const { inputProps, Dropdown } = useDropdown({
     inputProps: {
+      placeholder: "Add new user...",
       className:
-        "w-full text-3xl py-4 px-2 focus-visible:outline-none focus-visible:transition-colors focus-visible:border-b-4 focus-visible:border-blue-700",
-      type: "text",
-      placeholder: "Add New User...",
+        "w-full text-3xl py-4 px-2 focus-visible:outline-none transition-colors border-b-4 border-blue-700",
     },
     dropdownProps: {
       data: ["Apples", "Bananas", "Avocados", "Pears", "Mangoes"],
@@ -30,13 +30,11 @@ function App() {
     getUsers();
   }, []);
 
-  console.log("Users:", users);
-
   return (
     <div className="flex flex-col p-4 w-full gap-8 items-center">
       <h1 className="text-5xl font-bold text-blue-700">Pick Users</h1>
       <div className="relative w-3/4">
-        <input {...inputProps} />
+        <div {...inputProps}></div>
         <Dropdown />
       </div>
     </div>

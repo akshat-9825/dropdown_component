@@ -1,0 +1,13 @@
+.dropdown-input {
+  position: relative;
+  color: black;
+}
+
+.dropdown-input:empty::before {
+  content: attr(placeholder);
+  color: grey;
+}
+
+.dropdown-input:focus::before {
+  content: "";
+}
