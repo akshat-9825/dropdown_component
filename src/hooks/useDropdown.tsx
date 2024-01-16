@@ -37,17 +37,23 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
     };
   }, []);
 
-  const handleInputChange = useCallback(() => {
-    const inputValue = inputRef.current?.textContent?.toLowerCase() || "";
-    if (inputValue !== "") {
-      const filteredValues = data.filter((item) =>
-        item.toLowerCase().includes(inputValue)
-      );
-      setFilteredData(filteredValues);
-    } else {
-      setFilteredData(data);
-    }
-  }, [data]);
+  const handleInputChange = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      const inputValue = inputRef.current?.textContent?.toLowerCase() || "";
+      if (inputValue === "") {
+        if (event.key === "Backspace" && selected.length > 0) {
+          setSelected(selected.slice(0, -1));
+        }
+        setFilteredData(data);
+      } else {
+        const filteredValues = data.filter((item) =>
+          item.toLowerCase().includes(inputValue)
+        );
+        setFilteredData(filteredValues);
+      }
+    },
+    [data, selected]
+  );
 
   const handleInputClick = useCallback(() => {
     setIsDropdownVisible(true);
@@ -55,13 +61,19 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
 
   const handleAvatarClick = useCallback(
     (avatarName: string) => {
-      setSelected((prevSelected) => [...prevSelected, avatarName]);
+      setSelected((prevSelected) => {
+        if (!prevSelected.includes(avatarName)) {
+          return [...prevSelected, avatarName];
+        }
+        return [...prevSelected];
+      });
     },
     [setSelected]
   );
 
   const handleAvatarRemove = useCallback(
     (avatarName: string) => {
+      console.log("CLICK!");
       setSelected((prevSelected) =>
         prevSelected.filter((name) => name !== avatarName)
       );
@@ -69,27 +81,37 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
     [setSelected]
   );
 
-  const selectedAvatars = selected.map((avatar) => (
-    <Avatar
-      key={avatar}
-      name={avatar}
-      onRemove={() => handleAvatarRemove(avatar)}
-    />
-  ));
+  const SelectedAvatars = useCallback(() => {
+    return (
+      <div className="flex flex-row flex-wrap gap-2">
+        {selected.length > 0
+          ? selected.map((avatar) => (
+              <Avatar
+                key={avatar}
+                name={avatar}
+                className="border-gray-500 border rounded-full w-36 h-8"
+                imageClassName="-z-10 "
+                onRemove={() => handleAvatarRemove(avatar)}
+              />
+            ))
+          : null}
+      </div>
+    );
+  }, [handleAvatarRemove, selected]);
 
   return {
     inputProps: {
       ...inputProps,
       role: "textbox",
       contentEditable: true,
-      onInput: handleInputChange,
+      suppressContentEditableWarning: true,
+      onKeyDown: handleInputChange,
       onClick: handleInputClick,
       ref: inputRef,
       className: classNames("dropdown-input", inputProps.className),
-      placeholder: inputProps.placeholder,
     },
     isDropdownVisible,
-    selectedAvatars,
+    SelectedAvatars,
     filteredData,
     Dropdown: () =>
       isDropdownVisible &&
@@ -102,7 +124,7 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
               key={item}
               className="p-2 hover:bg-gray-100 cursor-pointer"
               onClick={() => handleAvatarClick(item)}>
-              <Avatar name={item} />
+              <Avatar name={item} strikeThrough={selected.includes(item)} />
             </div>
           ))}
         </div>
