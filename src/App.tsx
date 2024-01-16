@@ -6,6 +6,7 @@ import useDropdown from "./hooks/useDropdown";
 function App() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [users, setUsers] = useState<User[]>([]);
+
   const { inputProps, Dropdown, SelectedAvatars } = useDropdown({
     inputProps: {
       placeholder: "Add new user...",
@@ -13,15 +14,21 @@ function App() {
         "flex-1 min-w-40 text-3xl h-16 py-4 px-2 focus-visible:outline-none transition-colors",
     },
     dropdownProps: {
-      data: ["Apples", "Bananas", "Avocados", "Pears", "Mangoes"],
+      data: users.length > 0 ? users : [],
     },
   });
 
   useEffect(() => {
     const getUsers = async () => {
       try {
-        const fetchedUsers = await fetchUsers({ limit: 10 });
-        setUsers(fetchedUsers);
+        const { users } = await fetchUsers({
+          limit: 10,
+        });
+        const propData = users.map((user) => ({
+          name: `${user.firstName} ${user.lastName}`,
+          image: user.image,
+        }));
+        setUsers(propData ? propData : []);
       } catch (error) {
         // Handle error appropriately
       }

@@ -1,4 +1,4 @@
-import { FetchUsersProps, User } from "../utils";
+import { FetchUsersProps, fetchedUsersType } from "../utils";
 
 /**
  * Fetches users from the API.
@@ -7,9 +7,9 @@ import { FetchUsersProps, User } from "../utils";
  * @param {number} [options.limit=10] - The maximum number of users to fetch.
  * @return {Promise<User[]>} - A promise that resolves to an array of user objects.
  */
-const fetchUsers = async ({ limit = 10 }: FetchUsersProps = {}): Promise<
-  User[]
-> => {
+const fetchUsers = async ({
+  limit = 10,
+}: FetchUsersProps = {}): Promise<fetchedUsersType> => {
   try {
     const response = await fetch(`https://dummyjson.com/users?limit=${limit}`);
     if (!response.ok) {
@@ -17,7 +17,7 @@ const fetchUsers = async ({ limit = 10 }: FetchUsersProps = {}): Promise<
     }
 
     const data = await response.json();
-    return data as User[];
+    return data as fetchedUsersType;
   } catch (error) {
     console.error(error);
     throw new Error("Failed to fetch users");

@@ -1,9 +1,17 @@
 import classNames from "classnames";
 
 export interface User {
-  id: number;
   name: string;
-  email: string;
+  image: string;
+}
+
+export interface userType {
+  firstName: string;
+  lastName: string;
+  image: string;
+}
+export interface fetchedUsersType {
+  users: userType[];
 }
 
 export interface FetchUsersProps {
@@ -12,6 +20,7 @@ export interface FetchUsersProps {
 
 interface AvatarProps {
   name: string;
+  image: string;
   onRemove?: () => void;
   className?: string;
   imageClassName?: string;
@@ -28,6 +37,7 @@ export const Avatar = ({
   name,
   onRemove,
   className,
+  image,
   imageClassName,
   strikeThrough = false,
 }: AvatarProps) => (
@@ -38,7 +48,7 @@ export const Avatar = ({
         "w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center",
         imageClassName
       )}>
-      {name[0].toUpperCase()}
+      <img src={image} />
     </div>
     <span className={classNames({ "line-through": strikeThrough })}>
       {name}

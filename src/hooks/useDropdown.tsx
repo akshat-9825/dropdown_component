@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import classNames from "classnames";
-import { Avatar } from "../utils";
+import { Avatar, User } from "../utils";
 import "./dropdown.css";
 
 interface DropdownProps {
-  data: string[];
+  data: User[];
 }
 
 interface UseDropdownProps {
@@ -14,9 +14,16 @@ interface UseDropdownProps {
 
 const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
   const { data } = dropdownProps;
-  const [filteredData, setFilteredData] = useState<string[]>(
-    data ? data.sort() : []
+  const dataNames = useMemo(
+    () =>
+      data
+        .map((item) => {
+          return item.name;
+        })
+        .sort(),
+    [data]
   );
+  const [filteredData, setFilteredData] = useState(data.sort());
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const inputRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -40,12 +47,21 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (data.length > 0) {
+      setFilteredData(data.sort());
+    }
+  }, [data]);
+
   const handleInputChange = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       const inputValue = inputRef.current?.textContent?.toLowerCase() || "";
       if (event.key === "Enter") {
         setSelected((prevSelected) => {
-          if (data.includes(inputValue) && !prevSelected.includes(inputValue)) {
+          if (
+            dataNames.includes(inputValue) &&
+            !prevSelected.includes(inputValue)
+          ) {
             return [...prevSelected, inputValue];
           }
           return [...prevSelected];
@@ -59,14 +75,14 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
         }
       }
       const filteredValues = data.filter(
-        (item) =>
+        ({ name }) =>
           (inputValue.length > 0
-            ? item.toLowerCase().includes(inputValue)
-            : true) && !selected.includes(item)
+            ? name.toLowerCase().includes(inputValue)
+            : true) && !selected.includes(name)
       );
-      setFilteredData(filteredValues);
+      setFilteredData(filteredValues.sort());
     },
-    [data, selected]
+    [data, dataNames, selected]
   );
 
   const handleInputClick = useCallback(() => {
@@ -81,7 +97,7 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
       return [...prevSelected];
     });
     setFilteredData((prevValue) => {
-      return prevValue.filter((item) => item !== avatarName);
+      return prevValue.filter((item) => item.name !== avatarName);
     });
   }, []);
 
@@ -90,9 +106,17 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
       setSelected((prevSelected) =>
         prevSelected.filter((name) => name !== avatarName)
       );
-      setFilteredData([...filteredData, avatarName].sort());
+      setFilteredData(
+        [
+          ...filteredData,
+          {
+            name: avatarName,
+            image: data.find(({ name }) => name === avatarName)?.image || "",
+          },
+        ].sort()
+      );
     },
-    [filteredData]
+    [data, filteredData]
   );
 
   const SelectedAvatars = useCallback(() => {
@@ -103,7 +127,8 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
               <Avatar
                 key={avatar}
                 name={avatar}
-                className="border-gray-500 border rounded-full w-36 h-8"
+                image={data.find(({ name }) => name === avatar)?.image || ""}
+                className="border-gray-500 border rounded-full min-w-36 pr-8 h-8"
                 imageClassName="-z-10 "
                 onRemove={() => handleAvatarRemove(avatar)}
               />
@@ -111,7 +136,7 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
           : null}
       </div>
     );
-  }, [handleAvatarRemove, selected]);
+  }, [data, handleAvatarRemove, selected]);
 
   return {
     inputProps: {
@@ -134,12 +159,12 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
         <div
           className="absolute w-80 h-fit z-10 mt-2 bg-white border rounded shadow-md"
           ref={dropdownRef}>
-          {filteredData.map((item) => (
+          {filteredData.map(({ name, image }, index) => (
             <div
-              key={item}
+              key={index}
               className="p-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => handleAvatarClick(item)}>
-              <Avatar name={item} />
+              onClick={() => handleAvatarClick(name)}>
+              <Avatar name={name} image={image} />
             </div>
           ))}
         </div>
