@@ -1,16 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import classNames from "classnames";
-import { Avatar, User } from "../utils";
+import { Avatar, UseDropdownProps } from "../utils";
 import "./dropdown.css";
-
-interface DropdownProps {
-  data: User[];
-}
-
-interface UseDropdownProps {
-  inputProps: React.HTMLAttributes<HTMLDivElement> & { placeholder: string };
-  dropdownProps: DropdownProps;
-}
 
 const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
   const { data } = dropdownProps;

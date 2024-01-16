@@ -18,6 +18,15 @@ export interface FetchUsersProps {
   limit?: number;
 }
 
+export interface DropdownProps {
+  data: User[];
+}
+
+export interface UseDropdownProps {
+  inputProps: React.HTMLAttributes<HTMLDivElement> & { placeholder: string };
+  dropdownProps: DropdownProps;
+}
+
 interface AvatarProps {
   name: string;
   image: string;
