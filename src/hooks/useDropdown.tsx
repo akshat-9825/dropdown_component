@@ -14,7 +14,9 @@ interface UseDropdownProps {
 
 const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
   const { data } = dropdownProps;
-  const [filteredData, setFilteredData] = useState<string[]>(data ? data : []);
+  const [filteredData, setFilteredData] = useState<string[]>(
+    data ? data.sort() : []
+  );
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const inputRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -24,7 +26,8 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        !dropdownRef.current.contains(event.target as Node) &&
+        !inputRef.current?.contains(event.target as Node)
       ) {
         setIsDropdownVisible(false);
       }
@@ -40,17 +43,28 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
   const handleInputChange = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       const inputValue = inputRef.current?.textContent?.toLowerCase() || "";
+      if (event.key === "Enter") {
+        setSelected((prevSelected) => {
+          if (data.includes(inputValue) && !prevSelected.includes(inputValue)) {
+            return [...prevSelected, inputValue];
+          }
+          return [...prevSelected];
+        });
+        setIsDropdownVisible(false);
+        inputRef.current?.blur();
+      }
       if (inputValue === "") {
         if (event.key === "Backspace" && selected.length > 0) {
           setSelected(selected.slice(0, -1));
         }
-        setFilteredData(data);
-      } else {
-        const filteredValues = data.filter((item) =>
-          item.toLowerCase().includes(inputValue)
-        );
-        setFilteredData(filteredValues);
       }
+      const filteredValues = data.filter(
+        (item) =>
+          (inputValue.length > 0
+            ? item.toLowerCase().includes(inputValue)
+            : true) && !selected.includes(item)
+      );
+      setFilteredData(filteredValues);
     },
     [data, selected]
   );
@@ -59,26 +73,26 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
     setIsDropdownVisible(true);
   }, []);
 
-  const handleAvatarClick = useCallback(
-    (avatarName: string) => {
-      setSelected((prevSelected) => {
-        if (!prevSelected.includes(avatarName)) {
-          return [...prevSelected, avatarName];
-        }
-        return [...prevSelected];
-      });
-    },
-    [setSelected]
-  );
+  const handleAvatarClick = useCallback((avatarName: string) => {
+    setSelected((prevSelected) => {
+      if (!prevSelected.includes(avatarName)) {
+        return [...prevSelected, avatarName];
+      }
+      return [...prevSelected];
+    });
+    setFilteredData((prevValue) => {
+      return prevValue.filter((item) => item !== avatarName);
+    });
+  }, []);
 
   const handleAvatarRemove = useCallback(
     (avatarName: string) => {
-      console.log("CLICK!");
       setSelected((prevSelected) =>
         prevSelected.filter((name) => name !== avatarName)
       );
+      setFilteredData([...filteredData, avatarName].sort());
     },
-    [setSelected]
+    [filteredData]
   );
 
   const SelectedAvatars = useCallback(() => {
@@ -112,6 +126,7 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
     },
     isDropdownVisible,
     SelectedAvatars,
+    selected,
     filteredData,
     Dropdown: () =>
       isDropdownVisible &&
@@ -124,7 +139,7 @@ const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
               key={item}
               className="p-2 hover:bg-gray-100 cursor-pointer"
               onClick={() => handleAvatarClick(item)}>
-              <Avatar name={item} strikeThrough={selected.includes(item)} />
+              <Avatar name={item} />
             </div>
           ))}
         </div>
