@@ -12,7 +12,7 @@ interface UseDropdownProps {
 
 const useDropdown = ({ inputProps, dropdownProps }: UseDropdownProps) => {
   const { data } = dropdownProps;
-  const [filteredData, setFilteredData] = useState<string[]>([]);
+  const [filteredData, setFilteredData] = useState<string[]>(data ? data : []);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
